@@ -31,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
         checkPermissionREAD_EXTERNAL_STORAGE(this);
         Cursor c = getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Audio.Media.DISPLAY_NAME},
+                new String[]{MediaStore.Audio.Media.DISPLAY_NAME,
+                        MediaStore.Audio.Media.DATA},
                 null, null, null);
 
         /*for (int i = 0; i < c.getCount(); i++) {
