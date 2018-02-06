@@ -23,11 +23,14 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.musicviewhol
     Context mcontext;
     Cursor mcursor;
     MediaPlayer mp;
+    private int currentplayingid;
+    private int currenttracktime;
 
     MusicAdapter(Context context, Cursor cursor) {
         mcontext = context;
         mcursor = cursor;
         mp = new MediaPlayer();
+        currentplayingid = -1;
     }
 
     @Override
@@ -47,19 +50,50 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.musicviewhol
             holder.button_play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mcursor.moveToPosition(position);
-                    String path = mcursor.getString(mcursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                    Log.e(TAG, "playing  id : " + position + " name:" + path);
-                    try {
-                        mp.reset();
-                        mp.setDataSource(path);
-                        mp.prepare();
-                        mp.start();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if (v.getTag().equals("play")) {
+                        mcursor.moveToPosition(position);
+                        String path = mcursor.getString(mcursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                        if (currentplayingid == position) {
+                            mp.seekTo(currenttracktime);
+                            mp.start();
+                            Log.e(TAG, "resume  id : " + position + " name:" + path);
+                        } else {
+                            if (currentplayingid != -1) {           //return the playing music text view to its initial value
+                                musicviewholder currentplayidvh = (musicviewholder) ((MainActivity) mcontext).rv_music_tracks.findViewHolderForAdapterPosition(currentplayingid);
+                                if (currentplayidvh != null) {
+                                    Log.e(TAG, "stop  id : " + currentplayingid + " name:" + currentplayidvh.tv_track_name.getText().toString());
+                                    currentplayidvh.button_play.setTag("play");
+                                    currentplayidvh.button_play.setText("play");
+                                }
+                            }
+                            Log.e(TAG, "playing  id : " + position + " name:" + path);
+                            try {
+                                mp.reset();
+                                mp.setDataSource(path);
+                                mp.prepare();
+                                mp.start();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        currentplayingid = position;
+                        v.setTag("pause");
+                        ((Button) v).setText("pause");
+                    } else {
+                        currenttracktime = mp.getCurrentPosition();
+                        mp.pause();
+                        v.setTag("play");
+                        ((Button) v).setText("play");
                     }
                 }
             });
+            if (position == currentplayingid) {
+                holder.button_play.setTag("pause");
+                holder.button_play.setText("pause");
+            }else if (holder.button_play.getTag().equals("pause")) {
+                holder.button_play.setTag("play");
+                holder.button_play.setText("play");
+            }
         }
 
     }

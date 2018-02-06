@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = MainActivity.class.getSimpleName();
     public static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 123;
 
-    RecyclerView rv_music_tracks;
+    public RecyclerView rv_music_tracks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
