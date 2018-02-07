@@ -31,14 +31,14 @@ public class MainActivity extends AppCompatActivity {
         checkPermissionREAD_EXTERNAL_STORAGE(this);
         Cursor c = getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                new String[]{MediaStore.Audio.Media.DISPLAY_NAME,
-                        MediaStore.Audio.Media.DATA},
+                null,
                 null, null, null);
 
-        /*for (int i = 0; i < c.getCount(); i++) {
+      /*  for (int i = 0; i < c.getCount(); i++) {
             if (c.moveToPosition(i)) {
                 String name = c.getString(c.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME));
-                Log.e(TAG, "id = " + i + " name: " + name);
+                int dur = c.getInt(c.getColumnIndex(MediaStore.Audio.Media.DURATION));
+                Log.e(TAG, "id = " + i + " name: " + name+" duration: "+dur);
             }
         }*/
         rv_music_tracks = (RecyclerView) findViewById(R.id.rv_music_tracks);
@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         rv_music_tracks.setLayoutManager(linearLayoutManager);
         MusicAdapter musicAdapter = new MusicAdapter(this, c);
         rv_music_tracks.setAdapter(musicAdapter);
+
     }
 
 
