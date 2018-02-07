@@ -1,9 +1,13 @@
 package com.example.mohamed.musicplayer;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -24,23 +28,25 @@ import java.util.concurrent.TimeUnit;
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.musicviewholder> {
     private final String TAG = MusicAdapter.class.getSimpleName();
     private final Handler seekbarprogresshandler;
+    private final long seekbarupdatetime=500;
     Context mcontext;
     Cursor mcursor;
-    MediaPlayer mp;
-    MediaPlayer dummymp;
+    public MediaPlayer mp;
     private int currentplayingid;
     private int currenttracktime;
     int cnt = 0;
+    private RecyclerView mRecycleView;
 
     MusicAdapter(Context context, Cursor cursor) {
         mcontext = context;
         mcursor = cursor;
-        mp = new MediaPlayer();
+        mp=new MediaPlayer();
+        mp=new MediaPlayer();
         mp.setLooping(false);
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                musicviewholder currentplayidvh = (musicviewholder) ((MainActivity) mcontext).rv_music_tracks.findViewHolderForAdapterPosition(currentplayingid);
+                musicviewholder currentplayidvh = (musicviewholder) mRecycleView.findViewHolderForAdapterPosition(currentplayingid);
                 if (currentplayidvh != null) {
                     Log.e(TAG, "stop  id : " + currentplayingid + " name:" + currentplayidvh.tv_track_name.getText().toString());
                     currentplayidvh.button_play.setTag("play");
@@ -54,22 +60,26 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.musicviewhol
         seekbarprogresshandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                musicviewholder currentplayidvh = (musicviewholder) ((MainActivity) mcontext).rv_music_tracks.findViewHolderForAdapterPosition(currentplayingid);
-                int deltime=300;
+                musicviewholder currentplayidvh = (musicviewholder) mRecycleView.findViewHolderForAdapterPosition(currentplayingid);
                 if(mp.isPlaying()&&currentplayidvh!=null){
                     Log.e(TAG, "updating seek bar " + mp.getCurrentPosition());
                     currentplayidvh.seek_bar_time.setProgress(100*mp.getCurrentPosition()/mp.getDuration());
-                    deltime=mp.getDuration()/100;
                     long millis=mp.getCurrentPosition();
                     String hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis),
                             TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
                             TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
                     currentplayidvh.tv_current_time.setText(hms);
                 }
-                seekbarprogresshandler.postDelayed(this, deltime);
+                seekbarprogresshandler.postDelayed(this, seekbarupdatetime);
             }
-        }, 300);
+        }, seekbarupdatetime);
         currentplayingid = -1;
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mRecycleView=recyclerView;
     }
 
     @Override
@@ -144,7 +154,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.musicviewhol
                 Log.e(TAG, "resume  id : " + position + " name:" + path);
             } else {
                 if (currentplayingid != -1) {           //return the playing music text view to its initial value
-                    musicviewholder currentplayidvh = (musicviewholder) ((MainActivity) mcontext).rv_music_tracks.findViewHolderForAdapterPosition(currentplayingid);
+                    musicviewholder currentplayidvh = (musicviewholder) mRecycleView.findViewHolderForAdapterPosition(currentplayingid);
                     if (currentplayidvh != null) {
                         Log.e(TAG, "stop  id : " + currentplayingid + " name:" + currentplayidvh.tv_track_name.getText().toString());
                         currentplayidvh.button_play.setTag("play");
